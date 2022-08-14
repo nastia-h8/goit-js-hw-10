@@ -9,7 +9,7 @@ const searchInput = document.querySelector('#search-box');
 const countryList = document.querySelector('.country-list');
 const countryInfo = document.querySelector('.country-info');
 
-searchInput.addEventListener('input', debounce(onSearchInput, DEBOUNCE_DELAY))
+searchInput.addEventListener('input', debounce(onSearchInput, DEBOUNCE_DELAY));
 
 function onSearchInput(e) {
     e.preventDefault();
@@ -17,27 +17,25 @@ function onSearchInput(e) {
     const countryName = searchInput.value.trim();
 
     if (countryName === "") {
-        countryList.innerHTML = '';
-        countryInfo.innerHTML = '';
+        clearMarkUp();
         return;
     }
     
     fetchCountries(countryName)
         .then(countries => {
-            countryList.innerHTML = '';
-            countryInfo.innerHTML = '';
-            
-            if (countries.length === 1) {
+            clearMarkUp();
+
+            if (countries.length > 10) {
+                alertTooManyMatches();
+            } else if (countries.length <= 10 && countries.length >= 2) {
+                countryList.insertAdjacentHTML('beforeend', renderCountryList(countries));
+            } else {
                 countryList.insertAdjacentHTML('beforeend', renderCountryList(countries));
                 countryInfo.insertAdjacentHTML('beforeend', renderCountryInfo(countries));
             }
-            else if (countries.length > 10) {
-                alertTooManyMatches();
-            } else {
-                countryList.insertAdjacentHTML('beforeend', renderCountryList(countries));
-            }
+            
         })
-        .catch(alertWrongName);
+        .catch(() => alertWrongName());
 
 }
 
@@ -70,6 +68,10 @@ function renderCountryInfo(countries) {
     return infoMarkup;
 }
 
+function clearMarkUp() {
+    countryList.innerHTML = '';
+    countryInfo.innerHTML = '';
+}
 
 function alertWrongName() {
     Notify.failure('Oops, there is no country with that name');
